@@ -54,8 +54,7 @@ class PlatinumRift
 			string move = "";
 			List<Zone> allMyZones = listZone.FindAll(z => z.Owner == myId);
 			foreach (var myZone in allMyZones)
-			{
-				Console.Error.WriteLine("222222222222222222222222222222222");
+			{	
 				// here I have to move my PODs to free zone
 				Zone freeZone = myZone.Neighbors.Find(n => n.Owner != myId);
 				if (freeZone != null)
@@ -76,7 +75,20 @@ class PlatinumRift
 				Console.WriteLine(move);
 			}
 
-			Console.WriteLine("1 73");
+
+
+			//int myPlBars = allMyZones.
+			// get first five best zone
+			string buy = "";
+			listZone = listZone.FindAll(zx=> zx.Owner != myId).OrderByDescending(z => z.Plbars).ToList();
+			for (int i = 0; i < 10; i++)
+			{
+				buy += "1 " + listZone[i].ID + " ";
+			}
+
+			//if (lis)
+
+			Console.WriteLine(buy);
 		}
 	}
 
