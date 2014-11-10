@@ -47,13 +47,35 @@ class PlatinumRift
 		// game loop
 		while (true)
 		{
-			WriteZones();
+			//WriteZones();
 			ReadPodsForZones();
 
-			// Write an action using Console.WriteLine()
-			// To debug: Console.Error.WriteLine("Debug messages...");
+			//free going to free zone
+			string move = "";
+			List<Zone> allMyZones = listZone.FindAll(z => z.Owner == myId);
+			foreach (var myZone in allMyZones)
+			{
+				Console.Error.WriteLine("222222222222222222222222222222222");
+				// here I have to move my PODs to free zone
+				Zone freeZone = myZone.Neighbors.Find(n => n.Owner != myId);
+				if (freeZone != null)
+				{
+					move += myZone.Players[myId].PODs + " " + myZone.ID + " " + freeZone.ID + " ";
+				}
+			}
 
-			Console.WriteLine("WAIT"); // first line for movement commands, second line for POD purchase (see the protocol in the statement for details)
+
+
+
+			if (allMyZones.Count == 0)
+			{
+				Console.WriteLine("WAIT"); // first line for movement commands, second line for POD purchase (see the protocol in the statement for details)				
+			}
+			else 
+			{
+				Console.WriteLine(move);
+			}
+
 			Console.WriteLine("1 73");
 		}
 	}
