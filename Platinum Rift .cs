@@ -16,22 +16,17 @@ class Player
 		public int ID;
 		public int Plbars;
 		public int Owner;
-		public List<Zone> Neighbors;
+		public List<Zone> Neighbors = new List<Zone> ();
 
 	}
-	public class Link
-	{
-		public int Zone1;
-		public int Zone2;
-	}
-
+	
 	public static int playerCount = 0; // the amount of players (2 to 4)
 	public static int myId = 0; // my player ID (0, 1, 2 or 3)
 	public static int zoneCount = 0; // the amount of zones on the map
 	public static int linkCount = 0; // the amount of links between all zones
 
 	public static List<Zone> listZone = new List<Zone>();
-	public static List<Link> listLink = new List<Link>();
+	//public static List<Link> listLink = new List<Link>();
 
 	static void Main(String[] args)
 	{
@@ -39,7 +34,9 @@ class Player
 
 		ReadCommonData();
 		ReadZones();
-		ReadLinks();
+		ReadLinks(); 
+		WriteZones();
+
 
 		// game loop
 		while (true)
@@ -74,10 +71,13 @@ class Player
 			inputs = Console.ReadLine().Split(' ');
 			int zone1 = int.Parse(inputs[0]);
 			int zone2 = int.Parse(inputs[1]);
+			Zone z1 = listZone.Find(z => z.ID == zone1);
+			Zone z2 = listZone.Find(z => z.ID == zone2);
+			z1.Neighbors.Add(z2);
+			z2.Neighbors.Add(z1);
 
-
-			Link l = new Link() { Zone1 = zone1, Zone2 = zone2 };
-			listLink.Add(l);
+			//Link l = new Link() { Zone1 = zone1, Zone2 = zone2 };
+			//listLink.Add(l);
 		}
 	}
 	private static void ReadZones()
@@ -91,6 +91,19 @@ class Player
 			Zone z = new Zone() { ID = zoneId, Plbars = platinumSource };
 			listZone.Add(z);
 		}
+	}
+	private static void WriteZones()
+	{
+		foreach (var z in listZone)
+		{
+			string neighbors = "";
+			foreach (var neighbor in z.Neighbors)
+			{
+				neighbors += " " + neighbor.ID;
+			}
+			Console.Error.WriteLine(" ID:" + z.ID + "   Owner:" + z.Owner + "   PLB:" + z.Plbars + "   Neigh:" + neighbors);  
+		}
+	
 	}
 	private static void ReadCommonData()
 	{
