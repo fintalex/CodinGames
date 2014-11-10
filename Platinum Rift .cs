@@ -9,7 +9,7 @@ using System.Collections.Generic;
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
-class Player
+class PlatinumRift
 {
 	public class Zone
 	{
@@ -17,7 +17,14 @@ class Player
 		public int Plbars;
 		public int Owner;
 		public List<Zone> Neighbors = new List<Zone> ();
+		public List<Player> Players = new List<Player>();
+	}
 
+	public class Player
+	{
+		public int ID;
+		public List<Zone> Zones = new List<Zone>();
+		public int PODs;
 	}
 	
 	public static int playerCount = 0; // the amount of players (2 to 4)
@@ -26,7 +33,6 @@ class Player
 	public static int linkCount = 0; // the amount of links between all zones
 
 	public static List<Zone> listZone = new List<Zone>();
-	//public static List<Link> listLink = new List<Link>();
 
 	static void Main(String[] args)
 	{
@@ -35,25 +41,14 @@ class Player
 		ReadCommonData();
 		ReadZones();
 		ReadLinks(); 
-		WriteZones();
+		//WriteZones();
 
 
 		// game loop
 		while (true)
 		{
-			int platinum = int.Parse(Console.ReadLine()); // my available Platinum
-			Console.Error.WriteLine("My plbars:" + platinum);
-
-			for (int i = 0; i < zoneCount; i++)
-			{
-				inputs = Console.ReadLine().Split(' ');
-				int zId = int.Parse(inputs[0]); // this zone's ID
-				int ownerId = int.Parse(inputs[1]); // the player who owns this zone (-1 otherwise)
-				int podsP0 = int.Parse(inputs[2]); // player 0's PODs on this zone
-				int podsP1 = int.Parse(inputs[3]); // player 1's PODs on this zone
-				int podsP2 = int.Parse(inputs[4]); // player 2's PODs on this zone (always 0 for a two player game)
-				int podsP3 = int.Parse(inputs[5]); // player 3's PODs on this zone (always 0 for a two or three player game)
-			}
+			WriteZones();
+			ReadPodsForZones();
 
 			// Write an action using Console.WriteLine()
 			// To debug: Console.Error.WriteLine("Debug messages...");
@@ -63,6 +58,30 @@ class Player
 		}
 	}
 
+	private static void ReadPodsForZones()
+	{
+		string[] inputs;
+		int platinum = int.Parse(Console.ReadLine()); // my available Platinum
+		Console.Error.WriteLine("My plbars:" + platinum);
+
+		for (int i = 0; i < zoneCount; i++)
+		{
+			inputs = Console.ReadLine().Split(' ');
+			int zId = int.Parse(inputs[0]); // this zone's ID
+			Zone zone = listZone.Find(z => z.ID == zId);
+
+			int ownerId = int.Parse(inputs[1]); // the player who owns this zone (-1 otherwise)
+			int podsP0 = int.Parse(inputs[2]); // player 0's PODs on this zone
+			int podsP1 = int.Parse(inputs[3]); // player 1's PODs on this zone
+			int podsP2 = int.Parse(inputs[4]); // player 2's PODs on this zone (always 0 for a two player game)
+			int podsP3 = int.Parse(inputs[5]); // player 3's PODs on this zone (always 0 for a two or three player game)
+			zone.Owner = ownerId;
+			if (podsP0 != 0) { zone.Players.Add(new Player() { ID = 0, PODs = podsP0 }); }
+			if (podsP1 != 0) { zone.Players.Add(new Player() { ID = 1, PODs = podsP1 }); }
+			if (podsP2 != 0) { zone.Players.Add(new Player() { ID = 2, PODs = podsP2 }); }
+			if (podsP3 != 0) { zone.Players.Add(new Player() { ID = 3, PODs = podsP3 }); }
+		}
+	}
 	private static void ReadLinks()
 	{
 		string[] inputs;
@@ -96,12 +115,16 @@ class Player
 	{
 		foreach (var z in listZone)
 		{
-			string neighbors = "";
+			string neighbors = "", players = "";
 			foreach (var neighbor in z.Neighbors)
 			{
 				neighbors += " " + neighbor.ID;
 			}
-			Console.Error.WriteLine(" ID:" + z.ID + "   Owner:" + z.Owner + "   PLB:" + z.Plbars + "   Neigh:" + neighbors);  
+			foreach (var player in z.Players)
+			{
+				players += "   PL:" + player.ID + "-" + player.PODs;
+			}
+			Console.Error.WriteLine(" ID:" + z.ID + "   Owner:" + z.Owner + "   PLB:" + z.Plbars + "   Neigh:" + neighbors + " " + players);  
 		}
 	
 	}
