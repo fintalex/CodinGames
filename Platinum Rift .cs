@@ -16,7 +16,7 @@ class PlatinumRift
 		public int ID;
 		public int Plbars;
 		public int Owner;
-		public List<Zone> Neighbors = new List<Zone> ();
+		public List<Zone> Neighbors = new List<Zone>();
 		public List<Player> Players = new List<Player>();
 	}
 
@@ -26,11 +26,12 @@ class PlatinumRift
 		public List<Zone> Zones = new List<Zone>();
 		public int PODs;
 	}
-	
+
 	public static int playerCount = 0; // the amount of players (2 to 4)
 	public static int myId = 0; // my player ID (0, 1, 2 or 3)
 	public static int zoneCount = 0; // the amount of zones on the map
 	public static int linkCount = 0; // the amount of links between all zones
+	public static int myPlbar = 0; // my current count of platinum
 
 	public static List<Zone> listZone = new List<Zone>();
 
@@ -40,7 +41,7 @@ class PlatinumRift
 
 		ReadCommonData();
 		ReadZones();
-		ReadLinks(); 
+		ReadLinks();
 		//WriteZones();
 
 
@@ -52,25 +53,27 @@ class PlatinumRift
 
 			//free going to free zone
 			string move = "";
-			List<Zone> allMyZones = listZone.FindAll(z => z.Owner == myId);
-			foreach (var myZone in allMyZones)
-			{	
+			List<Zone> allMyZonesPODs = listZone.FindAll(z => z.Owner == myId && z.Players.Find(p => p.ID == myId) != null);
+			foreach (var myZone in allMyZonesPODs)
+			{
 				// here I have to move my PODs to free zone
 				Zone freeZone = myZone.Neighbors.Find(n => n.Owner != myId);
 				if (freeZone != null)
 				{
-					move += myZone.Players[myId].PODs + " " + myZone.ID + " " + freeZone.ID + " ";
+					move += myZone.Players.Find(p => p.ID == myId).PODs + " " + myZone.ID + " " + freeZone.ID + " ";
+				}
+				else
+				{
+					move += myZone.Players.Find(p => p.ID == myId).PODs + " " + myZone.ID + " " + myZone.Neighbors[0].ID + " ";
 				}
 			}
 
 
-
-
-			if (allMyZones.Count == 0)
+			if (allMyZonesPODs.Count == 0)
 			{
 				Console.WriteLine("WAIT"); // first line for movement commands, second line for POD purchase (see the protocol in the statement for details)				
 			}
-			else 
+			else
 			{
 				Console.WriteLine(move);
 			}
@@ -79,24 +82,87 @@ class PlatinumRift
 
 			//int myPlBars = allMyZones.
 			// get first five best zone
-			string buy = "";
-			listZone = listZone.FindAll(zx=> zx.Owner != myId).OrderByDescending(z => z.Plbars).ToList();
-			for (int i = 0; i < 10; i++)
-			{
-				buy += "1 " + listZone[i].ID + " ";
-			}
+
+			string buy = GetRowForBuy();
+
+
 
 			//if (lis)
-
+			Console.Error.WriteLine("               String for buing:" + buy);
 			Console.WriteLine(buy);
 		}
+	}
+
+	private static string GetRowForBuy()
+	{
+		int myAvvailiablePODs = myPlbar / 20;
+		string buy = "";
+		List<Zone> orderedZone = new List<Zone>();
+
+
+		// find about (5-10 best zone(my zone) and keep it )
+		orderedZone = listZone.FindAll(zx => zx.Owner == myId).OrderByDescending(z => z.Plbars).ToList();
+		if (orderedZone.Count > 0)
+		{
+			int maxZoneForReflect = orderedZone.Count > 7 ? 7 : orderedZone.Count;
+			for (int i = 0; i < maxZoneForReflect; i++)
+			{
+				if (orderedZone[i].Neighbors.FindAll(n => n.Players.FindAll(p => p.ID != myId).Count > 0).Count > 0)
+				{
+					//List<Zone>  enemyPods = orderedZone[i].Neighbors.FindAll(n => n.Players.FindAll(p => p.ID != myId).Count > 0);
+					//int countPODsForHelp = 
+					buy += "2 " + orderedZone[i].ID + " ";
+					Console.Error.WriteLine("REFLECT ATACK FOR " + orderedZone[i].ID + " zone;");
+				}
+			}
+		}
+		
+
+
+
+		// for begining get all empty zone
+		orderedZone = listZone.FindAll(zx => zx.Owner == -1).OrderByDescending(z => z.Plbars).ToList();
+		if (orderedZone.Count > 0)
+		{
+			for (int i = 0; i < orderedZone.Count; i++)
+			{
+				buy += "2 " + orderedZone[i].ID + " ";
+			}
+		}
+		
+
+
+		// if all empty zone is busy -  buy PODs for my current pods
+		if (orderedZone.Count == 0)
+		{
+			Console.Error.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!   ALL EMPTY ZONE IS FINISHED,   myAvvailiablePODs=" + myAvvailiablePODs);
+			// get all my zones
+			orderedZone = listZone.FindAll(zx => zx.Owner == myId).OrderByDescending(z => z.Plbars).ToList();
+
+
+			foreach (Zone myzone in orderedZone)
+			{
+				
+				if (myzone.Neighbors.FindAll(n => n.Players.FindAll(p => p.ID != myId).Count > 0).Count>0)
+				{ 
+					//int countPODsForHelp = 
+					buy += "2 " + myzone.ID + " ";
+					Console.Error.WriteLine("HELP FOR " + myzone.ID + " zone;");
+				}
+			}
+			Console.Error.WriteLine("=================================================");
+		}
+
+
+
+		return buy;
 	}
 
 	private static void ReadPodsForZones()
 	{
 		string[] inputs;
-		int platinum = int.Parse(Console.ReadLine()); // my available Platinum
-		Console.Error.WriteLine("My plbars:" + platinum);
+		myPlbar = int.Parse(Console.ReadLine()); // my available Platinum
+		//Console.Error.WriteLine("My plbars:" + myPlbar);
 
 		for (int i = 0; i < zoneCount; i++)
 		{
@@ -109,7 +175,9 @@ class PlatinumRift
 			int podsP1 = int.Parse(inputs[3]); // player 1's PODs on this zone
 			int podsP2 = int.Parse(inputs[4]); // player 2's PODs on this zone (always 0 for a two player game)
 			int podsP3 = int.Parse(inputs[5]); // player 3's PODs on this zone (always 0 for a two or three player game)
+
 			zone.Owner = ownerId;
+			zone.Players.Clear();
 			if (podsP0 != 0) { zone.Players.Add(new Player() { ID = 0, PODs = podsP0 }); }
 			if (podsP1 != 0) { zone.Players.Add(new Player() { ID = 1, PODs = podsP1 }); }
 			if (podsP2 != 0) { zone.Players.Add(new Player() { ID = 2, PODs = podsP2 }); }
@@ -158,9 +226,9 @@ class PlatinumRift
 			{
 				players += "   PL:" + player.ID + "-" + player.PODs;
 			}
-			Console.Error.WriteLine(" ID:" + z.ID + "   Owner:" + z.Owner + "   PLB:" + z.Plbars + "   Neigh:" + neighbors + " " + players);  
+			Console.Error.WriteLine(" ID:" + z.ID + "   Owner:" + z.Owner + "   PLB:" + z.Plbars + "   Neigh:" + neighbors + " " + players);
 		}
-	
+
 	}
 	private static void ReadCommonData()
 	{
