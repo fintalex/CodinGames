@@ -252,12 +252,32 @@ class PlatinumRift
 
 
 		// for begining get all empty zone
-		orderedZone = listZone.FindAll(zx => zx.Owner == -1).OrderByDescending(z => z.Plbars).ToList();
-		if (orderedZone.Count > 0)
+		if (playerCount > 2)
 		{
-			for (int i = 0; i < orderedZone.Count; i++)
+			// change strategy
+			orderedZone = listZone.FindAll(zx => zx.Owner == -1).OrderByDescending(z => z.Plbars).ToList();
+			if (orderedZone.Count > 0)
 			{
-				buy += "2 " + orderedZone[i].ID + " ";
+				for (int i = 0; i < orderedZone.Count; i++)
+				{
+					// here I want to get 2 best neighbors
+					orderedZone[i].Neighbors = orderedZone[i].Neighbors.OrderByDescending(z => z.Plbars).ToList();
+
+					buy += "1 " + orderedZone[i].Neighbors[0].ID + " ";
+					if (orderedZone[i].Neighbors.Count>1) 
+						buy += "1 " + orderedZone[i].Neighbors[1].ID + " ";
+				}
+			}
+		}
+		else
+		{
+			orderedZone = listZone.FindAll(zx => zx.Owner == -1).OrderByDescending(z => z.Plbars).ToList();
+			if (orderedZone.Count > 0)
+			{
+				for (int i = 0; i < orderedZone.Count; i++)
+				{
+					buy += "2 " + orderedZone[i].ID + " ";
+				}
 			}
 		}
 
